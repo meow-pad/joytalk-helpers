@@ -8,6 +8,7 @@ import (
 	"github.com/meow-pad/persian/utils/coding"
 	"github.com/segmentio/kafka-go"
 	"sync/atomic"
+	"time"
 )
 
 func NewReader(opts ...Option) (*Reader, error) {
@@ -19,14 +20,16 @@ func NewReader(opts ...Option) (*Reader, error) {
 		return nil, err
 	}
 	kReader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  options.KafkaBrokers,
-		GroupID:  options.KafkaGroupId,
-		Topic:    options.KafkaTopic,
-		MaxBytes: options.KafkaMaxBytes,
+		Brokers:     options.KafkaBrokers,
+		GroupID:     options.KafkaGroupId,
+		GroupTopics: options.KafkaGroupTopics,
+		Topic:       options.KafkaTopic,
+		MaxBytes:    options.KafkaMaxBytes,
 	})
 	return &Reader{
 		options: options,
 		inner:   kReader,
+		closeCh: make(chan struct{}),
 	}, nil
 }
 
@@ -34,6 +37,7 @@ type Reader struct {
 	inner   *kafka.Reader
 	options *Options
 	closed  atomic.Bool
+	closeCh chan struct{}
 }
 
 func (reader *Reader) Start() error {
@@ -48,6 +52,7 @@ func (reader *Reader) Close() error {
 	if !reader.closed.CompareAndSwap(false, true) {
 		return nil
 	}
+	close(reader.closeCh)
 	return reader.inner.Close()
 }
 
@@ -66,7 +71,13 @@ func (reader *Reader) read() {
 		msg, err := reader.inner.FetchMessage(ctx)
 		if err != nil {
 			plog.Error("fetch message error", pfield.Error(err))
-			break
+			select {
+			case <-time.After(reader.options.RetryInterval):
+				// 等待结束则继续
+			case <-reader.closeCh:
+				break
+			}
+			continue
 		}
 		plog.Debug("receive message:",
 			pfield.String("Topic", msg.Topic),

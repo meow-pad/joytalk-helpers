@@ -16,7 +16,7 @@ type SendItem struct {
 	SendNick          string  `json:"sendNick"`
 	SendAvatarUrl     string  `json:"sendAvatarUrl"`
 	SendTimeStamp     int64   `json:"sendTimeStamp"`
-	UserId            string  `json:"userId"`
+	UserId            int64   `json:"userId"`
 	TotalGet          float32 `json:"totalGet"`
 	TotalPay          float32 `json:"totalPay"`
 }

@@ -32,9 +32,11 @@ func BuildMessage(data []byte, concernedNotices map[string]struct{}) (Message, e
 	if err := json.Unmarshal(data, &nMsg); err != nil {
 		return nil, err
 	}
-	if _, exist := concernedNotices[nMsg.Notice]; !exist {
-		// 并不关注的消息，无需构建
-		return nil, nil
+	if concernedNotices != nil {
+		if _, exist := concernedNotices[nMsg.Notice]; !exist {
+			// 并不关注的消息，无需构建
+			return nil, nil
+		}
 	}
 	builder, _ := builders[nMsg.Notice]
 	if builder == nil {

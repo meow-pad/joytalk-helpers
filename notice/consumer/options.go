@@ -1,8 +1,8 @@
-package notice
+package consumer
 
 import (
 	"errors"
-	"github.com/meow-pad/joytalk-helpers/notice/msg"
+	"github.com/meow-pad/joytalk-helpers/notice/consumer/msg"
 	"github.com/meow-pad/persian/frame/plog"
 	"github.com/meow-pad/persian/frame/plog/pfield"
 	"time"

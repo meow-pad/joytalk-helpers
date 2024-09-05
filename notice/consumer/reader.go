@@ -1,4 +1,4 @@
-package notice
+package consumer
 
 import (
 	"context"

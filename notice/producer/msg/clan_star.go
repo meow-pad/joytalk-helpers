@@ -6,7 +6,7 @@ const (
 
 type ClanStar struct {
 	ClanId    string `json:"clanId"`
-	TimeMs    int64  `json:"timeMs"`
+	TimeSec   int64  `json:"timeSec"`
 	StarIncr  int32  `json:"starIncr"`
 	TotalStar int32  `json:"totalStar"`
 }

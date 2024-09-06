@@ -30,14 +30,15 @@ func (writer *Writer) init(options *Options) error {
 		return err
 	}
 	writer.inner = &kafka.Writer{
-		Addr:         kafka.TCP(options.KafkaAddress...),
-		Topic:        options.KafkaTopic,
-		Balancer:     &kafka.Hash{},
-		MaxAttempts:  options.KafkaMaxAttempts,
-		WriteTimeout: options.KafkaWriteTimeout,
-		RequiredAcks: options.KafkaRequiredAcks,
-		Async:        true,
-		ErrorLogger:  plog.SugarLogger(),
+		Addr:                   kafka.TCP(options.KafkaAddress...),
+		Topic:                  options.KafkaTopic,
+		Balancer:               &kafka.Hash{},
+		MaxAttempts:            options.KafkaMaxAttempts,
+		WriteTimeout:           options.KafkaWriteTimeout,
+		RequiredAcks:           options.KafkaRequiredAcks,
+		Async:                  options.AsyncWrite,
+		ErrorLogger:            plog.SugarLogger(),
+		AllowAutoTopicCreation: options.AllowAutoTopicCreation,
 	}
 	return nil
 }
@@ -58,4 +59,8 @@ func (writer *Writer) WriteMessage(ctx context.Context, notice msg.Message) erro
 	}
 	err = writer.inner.WriteMessages(ctx, kMsg)
 	return err
+}
+
+func (writer *Writer) Close() error {
+	return writer.inner.Close()
 }

@@ -8,18 +8,22 @@ import (
 
 func newOptions() *Options {
 	return &Options{
-		KafkaMaxAttempts:  5,
-		KafkaWriteTimeout: 2 * time.Second,
-		KafkaRequiredAcks: kafka.RequireNone,
+		KafkaMaxAttempts:       5,
+		KafkaWriteTimeout:      2 * time.Second,
+		KafkaRequiredAcks:      kafka.RequireNone,
+		AsyncWrite:             false,
+		AllowAutoTopicCreation: false,
 	}
 }
 
 type Options struct {
-	KafkaAddress      []string
-	KafkaTopic        string
-	KafkaMaxAttempts  int                // 最大写尝试次数
-	KafkaWriteTimeout time.Duration      // 超时后放弃写入后重试
-	KafkaRequiredAcks kafka.RequiredAcks // 写确认机制
+	KafkaAddress           []string
+	KafkaTopic             string
+	KafkaMaxAttempts       int                // 最大写尝试次数
+	KafkaWriteTimeout      time.Duration      // 超时后放弃写入后重试
+	KafkaRequiredAcks      kafka.RequiredAcks // 写确认机制
+	AsyncWrite             bool               // 异步写
+	AllowAutoTopicCreation bool               // 允许topic缺失时自动创建
 }
 
 func checkOptions(opts *Options) error {
@@ -58,5 +62,17 @@ func WithKafkaWriteTimeout(timeout time.Duration) Option {
 func WithKafkaRequiredAcks(acks kafka.RequiredAcks) Option {
 	return func(o *Options) {
 		o.KafkaRequiredAcks = acks
+	}
+}
+
+func WithAsyncWrite(async bool) Option {
+	return func(o *Options) {
+		o.AsyncWrite = async
+	}
+}
+
+func WithAllowAutoTopicCreation(allowAutoTopicCreation bool) Option {
+	return func(o *Options) {
+		o.AllowAutoTopicCreation = allowAutoTopicCreation
 	}
 }

@@ -5,10 +5,9 @@ const (
 )
 
 type ClanIsland struct {
-	ClanId    string `json:"clanId"`
-	TimeMs    int64  `json:"timeMs"`
-	StarIncr  int32  `json:"starIncr"`
-	TotalStar int32  `json:"totalStar"`
+	ClanId      string `json:"clanId"`
+	TimeSec     int64  `json:"timeSec"`
+	IslandGrade uint32 `json:"islandGrade"`
 }
 
 func (clanIsland *ClanIsland) Key() string {

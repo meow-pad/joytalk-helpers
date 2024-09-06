@@ -6,9 +6,9 @@ const (
 
 type UserClanFunds struct {
 	Uid        string `json:"uid"`
-	TimeMs     int64  `json:"timeMs"`
-	FundsIncr  int32  `json:"fundsIncr"`
-	TotalFunds int32  `json:"totalFunds"`
+	TimeSec    int64  `json:"timeSec"`
+	FundsIncr  int64  `json:"fundsIncr"`
+	TotalFunds int64  `json:"totalFunds"`
 }
 
 func (userClanFunds *UserClanFunds) Key() string {

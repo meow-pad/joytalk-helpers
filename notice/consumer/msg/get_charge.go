@@ -7,12 +7,12 @@ func init() {
 }
 
 type GetCharge struct {
-	Amount     float64 `json:"amount"`
-	PayType    int     `json:"payType"`
-	OrderId    string  `json:"orderId"`
-	TsMs       int64   `json:"tsMs"`
-	ChargeType int     `json:"chargeType"`
-	UserId     int64   `json:"userId"`
+	Amount     int64  `json:"amount"`
+	PayType    int    `json:"payType"`
+	OrderId    string `json:"orderId"`
+	TsMs       int64  `json:"tsMs"`
+	ChargeType int    `json:"chargeType"`
+	UserId     int64  `json:"userId"`
 }
 
 func (msg *GetCharge) Notice() string {

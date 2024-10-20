@@ -57,7 +57,7 @@ func (reader *Reader) Close() error {
 }
 
 func (reader *Reader) read() {
-	defer coding.CachePanicError("", func() {
+	defer coding.CatchPanicError("", func() {
 		if reader.closed.Load() {
 			return
 		}

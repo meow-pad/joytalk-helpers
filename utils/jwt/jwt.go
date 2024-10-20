@@ -1,4 +1,4 @@
-package utils
+package jwt
 
 import (
 	"crypto/hmac"
@@ -62,4 +62,15 @@ func BuildBase64Signature(base64Header, base64Payload string, secret []byte) str
 func BuildJoytalkToken(base64Header, base64Payload string, secret []byte) string {
 	signature := BuildBase64Signature(base64Header, base64Payload, secret)
 	return strings.Join([]string{base64Header, base64Payload, signature}, ".")
+}
+
+func CheckToken(appId string, secret []byte, iat, exp int64, srcToken string) bool {
+	header := BuildBase64JoytalkJWTHeader(NewJoytalkJWTHeader())
+	payload := BuildBase64JoytalkJWTPayload(&JoyTalkJWTPayload{
+		Iat:   iat,
+		Exp:   exp,
+		AppId: appId,
+	})
+	token := BuildJoytalkToken(header, payload, secret)
+	return srcToken == token
 }

@@ -2,16 +2,15 @@ package familyapi
 
 import "github.com/meow-pad/joytalk-helpers/api"
 
-const BatchGetClanPath = "family/batchGetWealthFamilyInfoById"
+const BatchGetClanPath = "family/batchGetFamilyInfoById"
 
 type BatchGetFamilyRequest struct {
-	api.BaseRequest
 	// 家族ID列表，最多 50 条。
 	FamilyIds []string `json:"family_id_list" validate:"required"`
 }
 
 type FamilyGroup struct {
-	GroupId    string `json:"group_num"`     // 组编号
+	GroupId    int32  `json:"group_num"`     // 组编号
 	GroupName  string `json:"group_name"`    // 组名称
 	GroupElder string `json:"group_manager"` // 组 长老
 }

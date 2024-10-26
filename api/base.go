@@ -12,10 +12,6 @@ const (
 )
 
 type Request interface {
-	Iat() int64
-	Exp() int64
-	SetIat(iat int64)
-	SetExp(exp int64)
 }
 
 type BaseRequest struct {

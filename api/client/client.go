@@ -7,9 +7,11 @@ import (
 	"github.com/meow-pad/joytalk-helpers/api/payapi"
 	"github.com/meow-pad/joytalk-helpers/api/userapi"
 	"github.com/meow-pad/joytalk-helpers/utils/jwt"
+	phash "github.com/meow-pad/persian/utils/hash"
 	"github.com/meow-pad/persian/utils/json"
 	"github.com/valyala/fasthttp"
-	"net/http"
+	"hash"
+	"sync"
 	"time"
 )
 
@@ -24,10 +26,16 @@ func NewClient(appId, secret string, opts ...Option) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		inner:      &fasthttp.Client{},
-		appId:      appId,
-		secret:     secret,
-		jwtHeader:  jwt.BuildBase64JoytalkJWTHeader(jwt.NewJoytalkJWTHeader()),
+		inner:     &fasthttp.Client{},
+		appId:     appId,
+		secret:    secret,
+		jwtHeader: jwt.BuildBase64JoytalkJWTHeader(jwt.NewJoytalkJWTHeader()),
+		hashPool: &sync.Pool{
+			New: func() interface{} {
+				// 当池中没有对象时，创建一个新的对象
+				return jwt.BuildSha256Hash([]byte(secret))
+			},
+		},
 		requestUri: options.RequestUri,
 		payReqUri:  options.PayReqUri,
 	}, nil
@@ -39,6 +47,7 @@ type Client struct {
 	appId     string
 	secret    string
 	jwtHeader string
+	hashPool  *sync.Pool
 
 	requestUri string
 	payReqUri  string
@@ -46,20 +55,21 @@ type Client struct {
 
 func request[RespData any](client *Client, requestUri string, reqMsg any,
 	handler func(err error, data *RespData), timeout time.Duration) {
+	reqBody := json.ToString(reqMsg)
 	expDuration := int64(600)
 	nowSec := time.Now().Unix()
 	expSec := nowSec + expDuration
-	if rReq, _ := reqMsg.(api.Request); rReq != nil {
-		rReq.SetIat(nowSec)
-		rReq.SetExp(expSec)
-	}
 	// 构建签名
 	payload := jwt.BuildBase64JoytalkJWTPayload(&jwt.JoyTalkJWTPayload{
-		Iat:   nowSec,
-		Exp:   expSec,
-		AppId: client.appId,
+		Iat:    nowSec,
+		Exp:    expSec,
+		AppId:  client.appId,
+		Digest: phash.UpperMD5(reqBody),
 	})
-	token := jwt.BuildJoytalkToken(client.jwtHeader, payload, []byte(client.secret))
+
+	sHash := client.hashPool.Get().(hash.Hash)
+	token := jwt.BuildJoytalkToken(client.jwtHeader, payload, sHash)
+	client.hashPool.Put(sHash)
 	// 构建请求
 	req := &fasthttp.Request{}
 	req.SetRequestURI(requestUri)
@@ -67,7 +77,7 @@ func request[RespData any](client *Client, requestUri string, reqMsg any,
 	req.Header.Set("AppID", client.appId)
 	req.Header.Set("Token", token)
 	req.Header.Set("Content-Type", api.JsonContentType)
-	req.SetBody([]byte(json.ToString(reqMsg)))
+	req.SetBody([]byte(reqBody))
 	// 发起请求
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -77,21 +87,21 @@ func request[RespData any](client *Client, requestUri string, reqMsg any,
 		return
 	}
 
-	if resp.StatusCode() != http.StatusOK {
-		handler(fmt.Errorf("request failed, status code: %d", resp.StatusCode()), nil)
+	//if resp.StatusCode() != http.StatusOK {
+	//	handler(fmt.Errorf("request failed, status code: %d", resp.StatusCode()), nil)
+	//	return
+	//} else {
+	var respMsg api.Response[RespData]
+	if err = json.Unmarshal(resp.Body(), &respMsg); err != nil {
+		handler(err, nil)
 		return
-	} else {
-		var respMsg api.Response[RespData]
-		if err = json.Unmarshal(resp.Body(), &respMsg); err != nil {
-			handler(err, nil)
-			return
-		}
-		if respMsg.ErrCode != api.ErrCodeSuccess {
-			handler(fmt.Errorf("request failed, bizcode: %d", respMsg.ErrCode), nil)
-			return
-		}
-		handler(nil, &respMsg.Data)
 	}
+	if respMsg.ErrCode != api.ErrCodeSuccess {
+		handler(fmt.Errorf("request failed, bizcode: %d, errMsg:%s", respMsg.ErrCode, respMsg.ErrorMsg), nil)
+		return
+	}
+	handler(nil, &respMsg.Data)
+	//}
 }
 
 func (client *Client) BatchGetUsers(userIds []string,

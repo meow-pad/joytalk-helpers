@@ -8,7 +8,6 @@ import (
 const BatchGetUserFamilyInfoPath = "family/batchGetUserFamilyInfo"
 
 type BatchGetUserFamilyInfoRequest struct {
-	api.BaseRequest
 	// 用户ID列表，最多 50 条。
 	UserIds []string `json:"user_id_list" validate:"required"`
 }

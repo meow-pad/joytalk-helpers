@@ -27,6 +27,10 @@ type noticeMsg struct {
 	Notice string `json:"notice"`
 }
 
+type dataMsg struct {
+	Data Message `json:"data"`
+}
+
 func BuildMessage(data []byte, concernedNotices map[string]struct{}) (Message, error) {
 	nMsg := noticeMsg{}
 	if err := json.Unmarshal(data, &nMsg); err != nil {
@@ -44,7 +48,14 @@ func BuildMessage(data []byte, concernedNotices map[string]struct{}) (Message, e
 	}
 	msg := builder()
 	if msg == nil {
-		return nil, errors.New("message build failed")
+		return nil, errors.New("new message failed")
 	}
+	dMsg := &dataMsg{Data: msg}
+	if err := json.Unmarshal([]byte(data), dMsg); err != nil {
+		return nil, err
+	}
+	plog.Info("========build notice message",
+		pfield.String("notice", nMsg.Notice),
+		pfield.String("msg", json.ToString(msg)))
 	return msg, nil
 }

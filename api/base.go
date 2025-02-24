@@ -3,12 +3,6 @@ package api
 const (
 	JsonContentType   = "application/json"
 	MaxRequestElemNum = 50
-
-	ErrCodeSuccess      = 0
-	ErrCodeUnknownError = 1
-	ErrCodeInvalidParam = 6
-	ErrCodeLessAuth     = 109 // 权限不足
-	ErrCodeAuthFailed   = 110 // 鉴权失败
 )
 
 type Request interface {

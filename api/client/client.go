@@ -9,6 +9,8 @@ import (
 	"github.com/meow-pad/joytalk-helpers/api/userapi"
 	"github.com/meow-pad/joytalk-helpers/api/voiceroomapi"
 	"github.com/meow-pad/joytalk-helpers/utils/jwt"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	phash "github.com/meow-pad/persian/utils/hash"
 	"github.com/meow-pad/persian/utils/json"
 	"github.com/valyala/fasthttp"
@@ -99,7 +101,15 @@ func request[RespData any](client *Client, requestUri string, reqMsg any,
 		return
 	}
 	if respMsg.ErrCode != api.ErrCodeSuccess {
-		handler(fmt.Errorf("request failed, bizcode: %d, errMsg:%s", respMsg.ErrCode, respMsg.ErrorMsg), nil)
+		err = api.GetRespErr(respMsg.ErrCode, respMsg.ErrorMsg)
+		if len(respMsg.ErrorMsg) > 0 {
+			// 这里额外打印一次
+			plog.Error("request failed",
+				pfield.Int32("bizcode", respMsg.ErrCode),
+				pfield.String("errMsg", respMsg.ErrorMsg),
+			)
+		}
+		handler(err, nil)
 		return
 	}
 	handler(nil, &respMsg.Data)
@@ -155,6 +165,16 @@ func (client *Client) OrderConsume(consumeReq *payapi.OrderConsumeRequest,
 		return
 	}
 	requestUri := client.payReqUri + payapi.OrderConsumerPath
+	request[any](client, requestUri, consumeReq, handler, timeout)
+}
+
+func (client *Client) OrderReward(consumeReq *payapi.OrderRewardRequest,
+	handler func(err error, _ *any), timeout time.Duration) {
+	if len(client.payReqUri) <= 0 {
+		handler(ErrLessRequestUri, nil)
+		return
+	}
+	requestUri := client.payReqUri + payapi.OrderRewardPath
 	request[any](client, requestUri, consumeReq, handler, timeout)
 }
 

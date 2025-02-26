@@ -79,7 +79,7 @@ func (reader *Reader) read() {
 			}
 			continue
 		}
-		plog.Debug("receive message:",
+		plog.Debug("receive notice message:",
 			pfield.String("Topic", msg.Topic),
 			pfield.Int("Partition", msg.Partition),
 			pfield.Int64("Offset", msg.Offset),

@@ -54,8 +54,8 @@ func BuildMessage(data []byte, concernedNotices map[string]struct{}) (Message, e
 	if err := json.Unmarshal([]byte(data), dMsg); err != nil {
 		return nil, err
 	}
-	plog.Info("========build notice message",
+	plog.Debug("build notice message",
 		pfield.String("notice", nMsg.Notice),
-		pfield.String("msg", json.ToString(msg)))
+		pfield.Any("msg", msg))
 	return msg, nil
 }

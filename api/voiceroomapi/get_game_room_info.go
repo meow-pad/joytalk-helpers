@@ -6,6 +6,7 @@ const GetGameRoomInfo = "voiceroom/getGameRoomInfo"
 
 type GetGameRoomInfoRequest struct {
 	RoomId int64 `json:"roomId" validate:"required"`
+	GameId int64 `json:"gameId" validate:"required"`
 }
 
 type GetGameRoomInfoData struct {

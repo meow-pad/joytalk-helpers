@@ -105,6 +105,7 @@ func request[RespData any](client *Client, requestUri string, reqMsg any,
 		if len(respMsg.ErrorMsg) > 0 {
 			// 这里额外打印一次
 			plog.Error("request failed",
+				pfield.String("requestUri", requestUri),
 				pfield.Int32("bizcode", respMsg.ErrCode),
 				pfield.String("errMsg", respMsg.ErrorMsg),
 			)
@@ -209,7 +210,7 @@ func (client *Client) GetVoiceRoomInfo(roomId int64,
 		&voiceroomapi.GetRoomInfoRequest{RoomId: roomId}, handler, timeout)
 }
 
-func (client *Client) GetVoiceGameRoomInfo(roomId int64,
+func (client *Client) GetVoiceGameRoomInfo(roomId int64, gameId int64,
 	handler func(err error, data *voiceroomapi.GetGameRoomInfoData), timeout time.Duration) {
 	if len(client.requestUri) <= 0 {
 		handler(ErrLessRequestUri, nil)
@@ -217,7 +218,7 @@ func (client *Client) GetVoiceGameRoomInfo(roomId int64,
 	}
 	requestUri := client.requestUri + voiceroomapi.GetGameRoomInfo
 	request[voiceroomapi.GetGameRoomInfoData](client, requestUri,
-		&voiceroomapi.GetGameRoomInfoRequest{RoomId: roomId}, handler, timeout)
+		&voiceroomapi.GetGameRoomInfoRequest{RoomId: roomId, GameId: gameId}, handler, timeout)
 }
 
 func (client *Client) RegisterVoiceGameStatus(registerReq *gamehallapi.RegisterStatusRequest,

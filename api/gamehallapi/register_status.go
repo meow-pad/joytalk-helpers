@@ -6,7 +6,7 @@ const RegisterStatusPath = "gamehall/registerStatus"
 
 type RegisterStatusRequest struct {
 	RoomId      int64 `json:"roomId"`
-	GameId      int   `json:"amount"`
+	GameId      int   `json:"gameId"`
 	GameStatus  int   `json:"gameStatus"` // 看常量定义
 	GameSeatNum int   `json:"gameSeatNum"`
 }

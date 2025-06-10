@@ -106,6 +106,7 @@ func request[RespData any](client *Client, requestUri string, reqMsg any,
 			// 这里额外打印一次
 			plog.Error("request failed",
 				pfield.String("requestUri", requestUri),
+				pfield.String("request", reqBody),
 				pfield.Int32("bizcode", respMsg.ErrCode),
 				pfield.String("errMsg", respMsg.ErrorMsg),
 			)
